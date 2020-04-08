@@ -2,7 +2,6 @@ package com.servletdemoproject;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -12,28 +11,27 @@ import java.io.PrintWriter;
 
 @WebServlet(
         description = "User Login Servlet Testing",
-        urlPatterns = {"/loginServlet"},
-        initParams = {
-                @WebInitParam(name = "userName",value = "Karthik"),
-                @WebInitParam(name = "password",value = "Karthik@123")
-        }
+        urlPatterns = {"/loginServlet"}
 )
 public class UserLoginServlet extends HttpServlet {
+    static String VALID_NAME_PATTERN = "^[A-Z]{1}[a-z]{2,}$";
+    static String VALID_PASSWORD_PATTERN = "^((?=[^@|#|&|%|$]*[@|&|#|%|$][^@|#|&|%|$]*$)(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9#@$?]{8,})$";
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String userName = request.getParameter("userName");
-        String password = request.getParameter("userPassword");
+        String userPassword = request.getParameter("userPassword");
 
-        String userId = getServletConfig().getInitParameter("userName");
-        String passwordID = getServletConfig().getInitParameter("password");
+        boolean validCredentials = userName.matches(VALID_NAME_PATTERN) && userPassword.matches(VALID_PASSWORD_PATTERN);
 
-        if(userId.equals(userName) && passwordID.equals(password)){
-            request.setAttribute("userName",userName);
-            request.getRequestDispatcher("LoginPageSuccessful.jsp").forward(request,response);
-        }else {
+        if (validCredentials) {
+            request.setAttribute("userName", userName);
+            request.getRequestDispatcher("LoginPageSuccessful.jsp").forward(request, response);
+        } else {
             RequestDispatcher requestDispatcher = getServletContext().getRequestDispatcher("/LoginPage.jsp");
             PrintWriter out = response.getWriter();
-            out.println("<font color=red>Either UserName Or Password Is Wrong.</font>");
-            requestDispatcher.include(request,response);
-        }    }
+            out.print("<script>alert('Please enter valid credentials');</script>");
+            requestDispatcher.include(request, response);
+        }
+    }
 }
